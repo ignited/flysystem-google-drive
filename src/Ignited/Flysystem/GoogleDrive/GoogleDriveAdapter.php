@@ -8,6 +8,7 @@ use Google_Service_Drive_FileList;
 use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Config;
 use League\Flysystem\Util;
+use League\Flysystem\FileNotFoundException;
 
 class GoogleDriveAdapter extends AbstractAdapter
 {
@@ -27,7 +28,7 @@ class GoogleDriveAdapter extends AbstractAdapter
         if($prefix !== null)
         {
             $this->prefix = $prefix;
-            $this->baseFolderId = $this->getParentFolder($prefix);
+            $this->baseFolderId = $this->getDirectory($prefix);
         }
     }
 
@@ -134,7 +135,14 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function deleteDir($dirname)
     {
+        $folderId = $this->getDirectory($dirname, false);
 
+        if($folderId == null)
+        {
+            throw new FileNotFoundException("Directory does not exist: ".$dirname);
+        }
+
+        return $this->service->files->delete($folderId);
     }
 
     /**
@@ -147,13 +155,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function createDir($dirname, Config $config)
     {
-        $paths = explode('/', trim($dirname, '/'));
-
-        $lastPath = array_pop($paths);
-
-        $parentFolderId = $this->getParentFolder(implode('/', $paths));
-
-        return $this->createDirectory($lastPath, $parentFolderId);
+        return $this->getDirectory($dirname);
     }
 
     /**
@@ -278,27 +280,29 @@ class GoogleDriveAdapter extends AbstractAdapter
 
     }
 
-    protected function getParentFolder($path)
+    protected function getDirectory($path, $create=true)
     {
         $parts = explode('/', trim($path, '/'));
         $folderId = $this->baseFolderId;
-        $currentPath = [];
+        $parentFolderId = $this->baseFolderId;
 
-        foreach ($parts as $name) {
-            $currentPath[] = $name;
-            $q = 'mimeType="application/vnd.google-apps.folder" and title contains "'.$name.'" and trashed = false';
-            if ($folderId) {
-                $q .= sprintf(' and "%s" in parents', $folderId);
+        foreach ($parts as $name)
+        {
+            $folderId = $this->getDirectoryId($name, $folderId);
+
+            if (!$folderId) {
+                if($create)
+                {
+                    $folder = $this->createDirectory($name, $parentFolderId);
+                    $folderId = $folder->id;
+                }
+                else
+                {
+                    return;
+                }
             }
-            $folders = $this->service->files->listFiles(array(
-                    'q' => $q,
-                ))->getItems();
-            if (count($folders) == 0) {
-                $folder = $this->createDirectory($name, $folderId);
-                $folderId = $folder->id;
-            } else {
-                $folderId = $folders[0]->id;
-            }
+
+            $parentFolderId = $folderId;
         }
 
         if (!$folderId) {
@@ -306,6 +310,31 @@ class GoogleDriveAdapter extends AbstractAdapter
         }
         
         return $folderId;
+    }
+
+    protected function getDirectoryId($name, $parentId=null)
+    {
+        if(is_null($parentId) && $this->baseFolderId !== null)
+        {
+            $parentId = $this->baseFolderId;
+        }
+
+        $q = 'mimeType="application/vnd.google-apps.folder" and title contains "'.$name.'" and trashed = false';
+
+        if(!is_null($parentId))
+        {
+            $q .= sprintf(' and "%s" in parents', $parentId);
+        }
+
+        $folders = $this->service->files->listFiles(array(
+                'q' => $q,
+            ))->getItems();
+
+        if (count($folders) == 0) {
+            return null;
+        } else {
+            return $folders[0]->id;
+        }
     }
 
     protected function createDirectory($name, $parentId=null)
@@ -330,7 +359,7 @@ class GoogleDriveAdapter extends AbstractAdapter
 
         $location = $this->applyPathPrefix($path);
 
-        $parentId = $this->getParentFolder($pathInfo['dirname']);
+        $parentId = $this->getDirectory($pathInfo['dirname']);
 
         $file = new Google_Service_Drive_DriveFile();
         $file->setTitle($fileName);
