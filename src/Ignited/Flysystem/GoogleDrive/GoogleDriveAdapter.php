@@ -4,6 +4,7 @@ namespace Ignited\Flysystem\GoogleDrive;
 use Google_Service_Drive;
 use Google_Service_Drive_DriveFile;
 use Google_Service_Drive_FileList;
+use Google_Http_Request;
 
 use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Config;
@@ -143,6 +144,9 @@ class GoogleDriveAdapter extends AbstractAdapter
             throw new FileNotFoundException($dirname);
         }
 
+        /*
+            Need to create config as to whether to 'delete' or 'trash'
+         */
         return $this->service->files->delete($folderId);
     }
 
@@ -188,7 +192,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function has($path)
     {
-
+        return $this->getFileId($path) !== null;
     }
 
     /**
@@ -200,7 +204,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function read($path)
     {
-
+        return $this->getFile($path);
     }
 
     /**
@@ -345,6 +349,62 @@ class GoogleDriveAdapter extends AbstractAdapter
         }
     }
 
+    protected function getFileId($path)
+    {
+        $paths = explode('/', $path);
+        $fileName = array_pop($paths);
+        $pathInfo = pathinfo($path);
+
+        if(!empty($pathInfo['dirname']))
+        {
+            $parentId = $this->getDirectory($pathInfo['dirname'], false);
+        }
+
+        if(is_null($parentId) && $this->baseFolderId !== null)
+        {
+            $parentId = $this->baseFolderId;
+        }
+
+        $q = 'title contains "'.$fileName.'" and trashed = false';
+        $q .= sprintf(' and "%s" in parents', $parentId);
+
+        $files = $this->service->files->listFiles(array(
+            'q' => $q,
+        ))->getItems();
+
+        if (count($files) == 0) {
+            return null;
+        } else {
+            return $files[0]->id;
+        }
+    }
+
+    protected function getFile($path)
+    {
+        $fileId = $this->getFileId($path);
+
+        $file = $this->service->files->get($fileId);
+
+        return ['contents'=>$this->downloadFile($file)];
+    }
+
+    protected function downloadFile($file) {
+      $downloadUrl = $file->getDownloadUrl();
+      if ($downloadUrl) {
+        $request = new Google_Http_Request($downloadUrl, 'GET', null, null);
+        $httpRequest = $this->service->getClient()->getAuth()->authenticatedRequest($request);
+        if ($httpRequest->getResponseHttpCode() == 200) {
+          return $httpRequest->getResponseBody();
+        } else {
+          // An error occurred.
+          return null;
+        }
+      } else {
+        // The file doesn't have any content stored on Drive.
+        return null;
+      }
+    }
+
     protected function createDirectory($name, $parentId=null)
     {
         $file = new Google_Service_Drive_DriveFile();
@@ -364,8 +424,6 @@ class GoogleDriveAdapter extends AbstractAdapter
         $paths = explode('/', $path);
         $fileName = array_pop($paths);
         $pathInfo = pathinfo($path);
-
-        $location = $this->applyPathPrefix($path);
 
         $parentId = $this->getDirectory($pathInfo['dirname']);
 
