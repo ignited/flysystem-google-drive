@@ -9,6 +9,7 @@ use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Config;
 use League\Flysystem\Util;
 use League\Flysystem\FileNotFoundException;
+use League\Flysystem\FileExistsException;
 
 class GoogleDriveAdapter extends AbstractAdapter
 {
@@ -139,7 +140,7 @@ class GoogleDriveAdapter extends AbstractAdapter
 
         if($folderId == null)
         {
-            throw new FileNotFoundException("Directory does not exist: ".$dirname);
+            throw new FileNotFoundException($dirname);
         }
 
         return $this->service->files->delete($folderId);
@@ -155,6 +156,13 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function createDir($dirname, Config $config)
     {
+        $folderId = $this->getDirectory($dirname, false);
+
+        if($folderId !== null)
+        {
+            throw new FileExistsException($dirname);
+        }
+
         return $this->getDirectory($dirname);
     }
 
