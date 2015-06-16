@@ -388,18 +388,28 @@ class GoogleDriveAdapter extends AbstractAdapter
         return ['contents'=>$this->downloadFile($file)];
     }
 
-    protected function downloadFile($file) {
+    protected function downloadFile($file)
+    {
       $downloadUrl = $file->getDownloadUrl();
-      if ($downloadUrl) {
+      
+      if ($downloadUrl)
+      {
         $request = new Google_Http_Request($downloadUrl, 'GET', null, null);
+
         $httpRequest = $this->service->getClient()->getAuth()->authenticatedRequest($request);
-        if ($httpRequest->getResponseHttpCode() == 200) {
+
+        if ($httpRequest->getResponseHttpCode() == 200)
+        {
           return $httpRequest->getResponseBody();
-        } else {
+        }
+        else
+        {
           // An error occurred.
           return null;
         }
-      } else {
+      }
+      else
+      {
         // The file doesn't have any content stored on Drive.
         return null;
       }
