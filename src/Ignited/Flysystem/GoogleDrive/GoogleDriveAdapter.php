@@ -19,16 +19,16 @@ class GoogleDriveAdapter extends AbstractAdapter
     {
         $this->service = $service;
 
-        if($prefix !== null)
-        {
-            $this->setPathPrefix($prefix);
-            $this->baseFolderId = $this->getDirectory($this->getParentFolder($prefix));
-        }
+        $this->setPathPrefix($prefix);
     }
 
     public function setPathPrefix($prefix)
     {
-        $this->pathPrefix = $prefix;
+        if($prefix !== null)
+        {
+            $this->prefix = $prefix;
+            $this->baseFolderId = $this->getParentFolder($prefix);
+        }
     }
 
     /**
