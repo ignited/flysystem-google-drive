@@ -1,0 +1,20 @@
+{
+    "name": "ignited/flysystem-google-drive",
+    "description": "",
+    "authors": [
+        {
+            "name": "Alex Whiteside",
+            "email": "alexwhiteside@ignitedlabs.com.au"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "google/apiclient": "1.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Ignited\\Flysystem\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
