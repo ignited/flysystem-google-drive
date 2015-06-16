@@ -24,10 +24,6 @@ class GoogleDriveAdapter extends AbstractAdapter
             $this->setPathPrefix($prefix);
             $this->baseFolderId = $this->getDirectory($this->getParentFolder($prefix));
         }
-        else
-        {
-            $this->setPathPrefix('root');
-        }
     }
 
     public function setPathPrefix($prefix)
@@ -151,15 +147,13 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function createDir($dirname, Config $config)
     {
-        $directories = explode('/', $dirname);
+        $paths = explode('/', trim($dirname, '/'));
 
-        $previousParentId = null;
+        $lastPath = array_pop($paths);
 
-        foreach($directories as $directory)
-        {
-            $result = $this->createDirectory($directory, $previousParentId);
-            $previousParentId = $result->id;
-        }
+        $parentFolderId = $this->getParentFolder(implode('/', $paths));
+
+        return $this->createDirectory($lastPath, $parentFolderId);
     }
 
     /**
@@ -289,6 +283,7 @@ class GoogleDriveAdapter extends AbstractAdapter
         $parts = explode('/', trim($path, '/'));
         $folderId = $this->baseFolderId;
         $currentPath = [];
+
         foreach ($parts as $name) {
             $currentPath[] = $name;
             $q = 'mimeType="application/vnd.google-apps.folder" and title contains "'.$name.'" and trashed = false';
@@ -305,6 +300,7 @@ class GoogleDriveAdapter extends AbstractAdapter
                 $folderId = $folders[0]->id;
             }
         }
+
         if (!$folderId) {
             return;
         }
