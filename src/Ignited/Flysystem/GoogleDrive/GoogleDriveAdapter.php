@@ -331,7 +331,7 @@ class GoogleDriveAdapter extends AbstractAdapter
             $parentId = $this->baseFolderId;
         }
 
-        $q = 'mimeType="application/vnd.google-apps.folder" and title contains "'.$name.'" and trashed = false';
+        $q = 'mimeType="application/vnd.google-apps.folder" and title = "'.$name.'" and trashed = false';
 
         if(!is_null($parentId))
         {
@@ -365,7 +365,7 @@ class GoogleDriveAdapter extends AbstractAdapter
             $parentId = $this->baseFolderId;
         }
 
-        $q = 'title contains "'.$fileName.'" and trashed = false';
+        $q = 'title = "'.$fileName.'" and trashed = false';
         $q .= sprintf(' and "%s" in parents', $parentId);
 
         $files = $this->service->files->listFiles(array(
