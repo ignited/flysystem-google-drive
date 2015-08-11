@@ -59,7 +59,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function writeStream($path, $resource, Config $config)
     {
-
+        // Todo
     }
 
     /**
@@ -73,7 +73,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function update($path, $contents, Config $config)
     {
-
+        // Todo
     }
 
     /**
@@ -87,7 +87,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function updateStream($path, $resource, Config $config)
     {
-
+        // Todo
     }
 
     /**
@@ -100,7 +100,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function rename($path, $newpath)
     {
-
+        // Todo
     }
 
     /**
@@ -113,7 +113,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function copy($path, $newpath)
     {
-
+        // Todo
     }
 
     /**
@@ -125,7 +125,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function delete($path)
     {
-
+        // Todo
     }
 
     /**
@@ -180,7 +180,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function setVisibility($path, $visibility)
     {
-
+        // Todo
     }
 
     /**
@@ -216,7 +216,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function readStream($path)
     {
-
+        // Todo
     }
 
     /**
@@ -229,7 +229,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function listContents($directory = '', $recursive = false)
     {
-
+        // Todo
     }
 
     /**
@@ -241,7 +241,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function getMetadata($path)
     {
-
+        // Todo
     }
 
     /**
@@ -253,7 +253,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function getSize($path)
     {
-
+        // Todo
     }
 
     /**
@@ -265,7 +265,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function getMimetype($path)
     {
-
+        // Todo
     }
 
     /**
@@ -277,7 +277,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function getTimestamp($path)
     {
-
+        // Todo
     }
 
     /**
@@ -289,7 +289,7 @@ class GoogleDriveAdapter extends AbstractAdapter
      */
     public function getVisibility($path)
     {
-
+        // Todo
     }
 
     protected function getDirectory($path, $create=true)
